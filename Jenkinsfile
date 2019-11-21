@@ -84,7 +84,7 @@ pipeline {
                 if (needTargetPath) {
                     sh "mkdir ${artifactFolder}"
                 }
-                sh "tar --directory=${APPLICATION_NAME} -czvf ${applicationZip} ${applicationDir}"
+                sh "tar -czvf ${applicationZip} ${applicationDir}"
                 archiveArtifacts artifacts: "${applicationZip}", excludes: null, onlyIfSuccessful: true         
             }
         }
