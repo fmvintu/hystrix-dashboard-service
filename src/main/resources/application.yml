@@ -1,0 +1,18 @@
+server:
+  port: 9090
+
+turbine:
+  appConfig: account-service,balance-service,customer-service
+  clusterNameExpression: new String("default")
+
+eureka:
+#  instance:
+#    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: ${DISCOVERY_URL:http://localhost:8761}/eureka/
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.web: DEBUG
