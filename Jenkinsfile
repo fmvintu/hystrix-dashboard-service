@@ -23,7 +23,18 @@ openshift.withCluster() {
                             
                             oc_app.narrow("svc").expose("--name=${service_name}", "--port=${service_port}", "--hostname=${service_route}");
                         }
-  
+	
+  patch_service_port_name = { String service_name ->
+			def app_svc = openshift.selector("svc/${service_name}").object();
+
+			def service_port = app_svc.spec.ports[0].port;
+			def service_port_name = app_svc.spec.ports[0].name;
+	  		app_svc.spec.ports[0].name="http-${service_port}";
+	  		def new_service_port_name = app_svc.spec.ports[0].name;
+	  		println("Service - Name: [${service_port_name}] Port: [${service_port}] New Name: [${new_service_port_name}]");
+			openshift.apply(app_svc);	
+  }
+	
   services_bc_lst = []
   services_bc_lst.addAll(SERVICE_PROJECTS.split(','));
   svc_needs_route = ["hystrix-dashboard-service":create_route, "discovery-service":create_route, "gateway-service":create_route]
@@ -180,6 +191,7 @@ pipeline {
                         println("Service: [${APPLICATION_NAME}] needs route: [${needs_route}]");
                         
                         svc_needs_route?.get(APPLICATION_NAME)?.call(app, APPLICATION_NAME, DEV_PROJECT);
+			patch_service_port_name.call(APPLICATION_NAME);
                     }
                  }
               }
@@ -220,6 +232,7 @@ pipeline {
                         }
                         def app = openshift.newApp("${APPLICATION_NAME}:${PROD_TAG}", "-e=${DISCOVERY_URL_ENV}");
                         svc_needs_route?.get(APPLICATION_NAME)?.call(app, APPLICATION_NAME, PROD_PROJECT);
+			patch_service_port_name.call(APPLICATION_NAME);
                  }
                }
              }
